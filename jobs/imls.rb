@@ -36,17 +36,21 @@ SCHEDULER.every '5m', first_in: 0 do |job|
   total_museums = total_museums_response.first["count"].to_i
   send_event('total_museums', { current:  total_museums})
 
-  # #### TOTAL WITH PHOTO ####
-  # total_with_photo_response = soda_client.get(dataset_resource_id, {
-  #   "$where" => "image is not null",
-  #   "$select" => "count(*)"
-  # })
-  # total_with_photo = total_with_photo_response.first["count"]
-  # send_event('number_with_photo', { current:  total_with_photo})
+  # museums per state - top 5 / low 5
+  # breakdown by type
+  # number with EIN; percent with EIN
+
+  #### TOTAL WITH PHOTO ####
+  total_nonprofit_response = soda_client.get(dataset_resource_id, {
+    "$where" => "ein is not null",
+    "$select" => "count(*)"
+  })
+  total_nonprofit = total_nonprofit_response.first["count"]
+  send_event('total_nonprofit', { current:  total_nonprofit})
 
   # #### PERCENT WITH PHOTO ####
-  # percent_with_photo = ((total_with_photo.to_f/total_tickets.to_f)*100).to_i
-  # send_event('percent_with_photo', { value:  percent_with_photo})
+  percent_nonprofit = ((total_nonprofit.to_f/total_museums.to_f)*100).to_i
+  send_event('percent_nonprofit', { value:  percent_nonprofit})
 
   # #### COUNT BY ISSUE TYPE ####
   # count_by_issue_type_response = soda_client.get(dataset_resource_id, {

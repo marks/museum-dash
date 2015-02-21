@@ -1,8 +1,8 @@
 <% content_for :title do %>IMLS Muesum Dashboard<% end %>
 <div class="gridster">
   <ul>
-    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
-      <div data-id="welcome" data-view="Text" data-title="Hello" data-text="This is a dashboard powered by data.imls.gov, dashing.rb, Socrata, and open data!" data-moreinfo="Protip: You can drag the widgets around!"></div>
+    <li data-row="1" data-col="1" data-sizex="2" data-sizey="1">
+      <div data-id="welcome" data-view="Text" data-title="Hello" data-text="This is a dashboard powered by data.imls.gov, dashing.rb, Socrata, and open data!" data-moreinfo="Built by @Skram during Open Data Day DC 2015. github.com/marks/museum-dash"></div>
     </li>
 
     <li data-row="1" data-col="2" data-sizex="1" data-sizey="1">
@@ -14,15 +14,13 @@
     </li>
     <li data-row="2" data-col="1" data-sizex="1" data-sizey="1">
       <div data-id="count_by_status" data-view="List" data-unordered="true" data-title="Count of Tickets by Status" data-moreinfo=""></div>
+    </li> -->
+    <li data-row="2" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="total_nonprofit" data-view="Number" data-title="Number Nonprofit" data-moreinfo="" data-prefix="" data-suffix=""></div>
     </li>
-    <li data-row="3" data-col="1" data-sizex="1" data-sizey="1">
-      <div data-id="number_with_photo" data-view="Number" data-title="Number Tickets with Photo" data-moreinfo="" data-prefix="" data-suffix=""></div>
+    <li data-row="2" data-col="2" data-sizex="1" data-sizey="1">
+      <div data-id="percent_nonprofit" data-view="Meter" data-title="Percent Nonprofit" data-min="0" data-max="100" data-suffix="%"></div>
     </li>
-    <li data-row="3" data-col="1" data-sizex="1" data-sizey="1">
-      <div data-id="percent_with_photo" data-view="Meter" data-title="Percent of Tickets with Photo" data-min="0" data-max="100" data-suffix="%"></div>
-    </li>
-    <li data-row="4" data-col="2" data-sizex="2" data-sizey="2">
-      <div data-id="pie_iframe" data-view="Iframe" data-url="https://brigades.opendatanetwork.com/w/je6i-p6w3/?cur=qmGoyygFkTK&from=root"></div>
-    </li>
- -->  </ul>
+
+  </ul>
 </div>
