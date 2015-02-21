@@ -4,7 +4,7 @@ require 'soda'
 raise 'SocrataAppTokenEnvironmentVariableUnset' if ENV['SOCRATA_APP_TOKEN'].nil?
 
 # Configure the dataset ID and initialize SODA client
-dataset_resource_id = "5rw9-2vgh"
+dataset_resource_id = "5rw9-2vgh" # URL: https://data.imls.gov/d/5rw9-2vgh
 soda_client = SODA::Client.new({
   domain: "data.imls.gov",
   app_token: ENV['SOCRATA_APP_TOKEN']
@@ -12,7 +12,6 @@ soda_client = SODA::Client.new({
 
 
 SCHEDULER.every '5m', first_in: 0 do |job|
-
 
   # #### COUNT BY MUSUEM TYPE ####
   # Construct SODA query
@@ -40,12 +39,14 @@ SCHEDULER.every '5m', first_in: 0 do |job|
   # Send event to dashboard
   send_event('count_by_type', { items: count_by_type.values.sort_by{|x| x[:value].to_i}.reverse })
 
+
   # #### TOTAL MUSEUMS ####
   total_museums_response = soda_client.get(dataset_resource_id, {
     "$select" => "count(*)"
   })
   total_museums = total_museums_response.first["count"].to_i
   send_event('total_museums', { current:  total_museums})
+
 
   #### TOTAL NONPROFIT ####
   total_nonprofit_response = soda_client.get(dataset_resource_id, {
@@ -55,12 +56,13 @@ SCHEDULER.every '5m', first_in: 0 do |job|
   total_nonprofit = total_nonprofit_response.first["count"]
   send_event('total_nonprofit', { current:  total_nonprofit})
 
+
   # #### PERCENT NONPROFIT ####
   percent_nonprofit = ((total_nonprofit.to_f/total_museums.to_f)*100).to_i
   send_event('percent_nonprofit', { value:  percent_nonprofit})
 
 
-  #### COUNT BY ISSUE TYPE ####
+  #### COUNT BY STATE ####
   count_by_state_response = soda_client.get(dataset_resource_id, {
     "$group" => "state",
     "$select" => "state, COUNT(*) AS n"
@@ -70,7 +72,9 @@ SCHEDULER.every '5m', first_in: 0 do |job|
     count_by_state[item.state] = {:label => item.state, :value => item.n}
   end
   count_by_state_in_order = count_by_state.values.sort_by{|x| x[:value].to_i}.reverse
+  # Stitch together top/bottom resuts
   count_by_state_to_send = count_by_state_in_order[0,8]+[{:label => "..."}]+count_by_state_in_order[-8,8]
   # Send event to dashboard
   send_event('count_by_state', { items: count_by_state_to_send })
+
 end
