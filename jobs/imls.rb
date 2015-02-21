@@ -14,23 +14,31 @@ soda_client = SODA::Client.new({
 SCHEDULER.every '5m', first_in: 0 do |job|
 
 
-  # #### COUNT BY STATUS ####
-  # # Construct SODA query
-  # count_by_status_response = soda_client.get(dataset_resource_id, {
-  #   "$group" => "ticket_status",
-  #   "$select" => "ticket_status, COUNT(ticket_status) AS n"
-  # })
-  # # Formulate list
-  # count_by_status = {}
-  # count_by_status_response.each do |item|
-  #   count_by_status[item.ticket_status] = {:label => item.ticket_status, :value => item.n}
-  # end
-  # # Send event to dashboard
-  # send_event('count_by_status', { items: count_by_status.values })
-
-  # museums per state - top 5 / low 5
-  # breakdown by type
-  # number with EIN; percent with EIN
+  # #### COUNT BY MUSUEM TYPE ####
+  # Construct SODA query
+  count_by_type_response = soda_client.get(dataset_resource_id, {
+    "$group" => "museum_type",
+    "$select" => "museum_type, COUNT(*) AS n"
+  })
+  type_map = {
+    "ART" => "Art Museums",
+    "BOT" => "Arboretums, Botanical Gardens, & Nature Centers",
+    "CMU" => "Children's Museums",
+    "GMU" => "Uncategorized or General Museums",
+    "HSC" => "Historical Societies, Historic Preservation",
+    "HST" => "History Museums",
+    "NAT" => "Natural History & Natural Science Museums",
+    "SCI" => "Science & Technology Museums & Planetariums",
+    "ZAW" => "Zoos, Aquariums, & Wildlife Conservation",
+  }
+  # Formulate list
+  count_by_type = {}
+  count_by_type_response.each do |item|
+    type_humanized = type_map[item.museum_type]
+    count_by_type[type_humanized] = {:label => type_humanized, :value => item.n}
+  end
+  # Send event to dashboard
+  send_event('count_by_type', { items: count_by_type.values.sort_by{|x| x[:value].to_i}.reverse })
 
   # #### TOTAL MUSEUMS ####
   total_museums_response = soda_client.get(dataset_resource_id, {
@@ -62,7 +70,7 @@ SCHEDULER.every '5m', first_in: 0 do |job|
     count_by_state[item.state] = {:label => item.state, :value => item.n}
   end
   count_by_state_in_order = count_by_state.values.sort_by{|x| x[:value].to_i}.reverse
-  count_by_state_to_send = count_by_state_in_order[0,7]+[{:label => "..."}]+count_by_state_in_order[-7,7]
+  count_by_state_to_send = count_by_state_in_order[0,8]+[{:label => "..."}]+count_by_state_in_order[-8,8]
   # Send event to dashboard
   send_event('count_by_state', { items: count_by_state_to_send })
 end
