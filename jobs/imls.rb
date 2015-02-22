@@ -10,16 +10,9 @@ soda_client = SODA::Client.new({
   app_token: ENV['SOCRATA_APP_TOKEN']
 })
 
-
-SCHEDULER.every '5m', first_in: 0 do |job|
-
-  # #### COUNT BY MUSUEM TYPE ####
-  # Construct SODA query
-  count_by_type_response = soda_client.get(dataset_resource_id, {
-    "$group" => "museum_type",
-    "$select" => "museum_type, COUNT(*) AS n"
-  })
-  type_map = {
+# mappings from code => value (from data dictionary which is a PDF)
+DATA_DICTIONARY = {
+  "museum_type" => {
     "ART" => "Art Museums",
     "BOT" => "Arboretums, Botanical Gardens, & Nature Centers",
     "CMU" => "Children's Museums",
@@ -29,11 +22,55 @@ SCHEDULER.every '5m', first_in: 0 do |job|
     "NAT" => "Natural History & Natural Science Museums",
     "SCI" => "Science & Technology Museums & Planetariums",
     "ZAW" => "Zoos, Aquariums, & Wildlife Conservation",
+  },
+  "nces_locale_code" => {
+    "1" => "City",
+    "2" => "Suburb",
+    "3" => "Town",
+    "4" => "Rural"
+  },
+  "aam_museum_region" => {
+    "1" => "New England",
+    "2" => "Mid-Atlantic",
+    "3" => "Southeastern",
+    "4" => "Midwest",
+    "5" => "Mount Plains",
+    "6" => "Western"
+  },
+  "micropolitan_area_flag" => {
+    "0" => "Not in a micropolitan statstical area (µSA)",
+    "1" => "In a micropolitan statistical area (µSA)"
+  },
+  "irs_990_flag" => {
+    "0" => "IRS form 990 data source not used",
+    "1" => "IRS form 990 data source used"
+  },
+  "imls_admin_data_source_flag" => {
+    "0" => "IMLS administrative data source not used",
+    "1" => "IMLS administrative data source used"
+  },
+  "third_party_source_flag" => {
+    "0" => "Third party (Factual) source not used",
+    "1" => "Third party (Factual) source used"
+  },
+  "private_grant_foundation_data_source_flag" => {
+    "0" => "Private grant foundation data source not used",
+    "1" => "Private grant foundation data source used"
   }
+}
+
+SCHEDULER.every '5m', first_in: 0 do |job|
+
+  # #### COUNT BY MUSUEM TYPE ####
+  # Construct SODA query
+  count_by_type_response = soda_client.get(dataset_resource_id, {
+    "$group" => "museum_type",
+    "$select" => "museum_type, COUNT(*) AS n"
+  })
   # Formulate list
   count_by_type = {}
   count_by_type_response.each do |item|
-    type_humanized = type_map[item.museum_type]
+    type_humanized = DATA_DICTIONARY["museum_type"][item.museum_type]
     count_by_type[type_humanized] = {:label => type_humanized, :value => item.n}
   end
   # Send event to dashboard
